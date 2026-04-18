@@ -1,5 +1,5 @@
 import Mathlib
-
+import Mathlib.Tactic
 
 set_option linter.unusedSectionVars false
 set_option linter.unusedSectionVars false
@@ -108,30 +108,62 @@ lemma handshaking_lemma :
   (∑ v : V, G.degree v) = 2 * G.edgeFinset.card := by
   exact SimpleGraph.sum_degrees_eq_twice_card_edges G
 
+set_option linter.flexible false in
 /--
 Cauchy–Schwarz inequality applied to the degree sequence.
 
 Mathematically:
 (∑_{v ∈ V} deg(v))^2 ≤ |V| · ∑_{v ∈ V} deg(v)^2.
 -/
-lemma sq_sum_degrees_le_card_vertex_set_mul_sum_sq_degrees :
+lemma sq_sum_degrees_le_card_vset_mul_sum_sq_degrees :
   (∑ x : V, G.degree x) ^ 2 ≤
     Fintype.card V * (∑ x : V, G.degree x ^ 2) := by
-  classical
-  simpa using
-    sq_sum_le_card_mul_sum_sq
-      (s := (Finset.univ : Finset V))
-      (f := fun x => G.degree x)
+  have h := Finset.sum_mul_sq_le_sq_mul_sq
+    (s := Finset.univ)
+    (f := fun x : V => G.degree x)
+    (g := fun _ : V => (1 : ℕ))
+  simp [Finset.sum_const] at h
+  simp [Nat.mul_comm] at h
+  exact h
+
+
+/--
+In a triangle-free graph, the sum of squares of vertex degrees
+is at most the number of edges times the number of vertices.
+
+Formally:
+∑_{v ∈ V} deg(v)^2 ≤ |E| · |V|.
+-/
+lemma sum_sq_degrees_le_card_edges_mul_card_vset
+  (htri : TriangleFree (G := G)) :
+  (∑ x : V, G.degree x ^ 2) ≤ G.edgeFinset.card * Fintype.card V := by
+  sorry
+
 
 /--
 Key inequality leading to Mantel's theorem.
 
-Mathematically:
+Formally:
 4|E| ≤ |V|^2.
 -/
 lemma four_mul_edges_le_sq_card_vset
   (htri : TriangleFree (G := G)) :
   4 * G.edgeFinset.card ≤ (Fintype.card V) ^ 2 := by
+  have h1 :=
+    sq_sum_degrees_le_card_vset_mul_sum_sq_degrees (G := G)
+  have h2 :=
+    sum_sq_degrees_le_card_edges_mul_card_vset (G := G) htri
+
+  rw [handshaking_lemma] at h1
+
+  have h3 : (2 * G.edgeFinset.card) ^ 2 ≤ G.edgeFinset.card * (Fintype.card V) ^ 2 := by
+    apply le_trans h1
+    have h2' := Nat.mul_le_mul_left (Fintype.card V) h2
+    simp [Nat.mul_comm] at h2'
+    rw [← Nat.mul_assoc] at h2'
+    simp [pow_two] at h2'
+    sorry
+
   sorry
 
 /--
@@ -139,7 +171,7 @@ Mantel's theorem.
 
 A triangle-free graph on n vertices has at most n^2 / 4 edges.
 
-Mathematically:
+Formally:
 |E| ≤ |V|^2 / 4.
 -/
 theorem mantel
