@@ -161,7 +161,7 @@ lemma four_mul_edges_le_sq_card_vset
     have h2' := Nat.mul_le_mul_left (Fintype.card V) h2
     simp [Nat.mul_comm] at h2'
     rw [← Nat.mul_assoc] at h2'
-    simp [pow_two] at h2'
+    simp [← pow_two] at h2'
     sorry
 
   sorry
