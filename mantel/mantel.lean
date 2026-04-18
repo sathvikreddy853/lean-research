@@ -139,7 +139,6 @@ lemma sum_sq_degrees_le_card_edges_mul_card_vset
   (∑ x : V, G.degree x ^ 2) ≤ G.edgeFinset.card * Fintype.card V := by
   sorry
 
-
 /--
 Key inequality leading to Mantel's theorem.
 
@@ -153,18 +152,26 @@ lemma four_mul_edges_le_sq_card_vset
     sq_sum_degrees_le_card_vset_mul_sum_sq_degrees (G := G)
   have h2 :=
     sum_sq_degrees_le_card_edges_mul_card_vset (G := G) htri
-
   rw [handshaking_lemma] at h1
-
   have h3 : (2 * G.edgeFinset.card) ^ 2 ≤ G.edgeFinset.card * (Fintype.card V) ^ 2 := by
     apply le_trans h1
     have h2' := Nat.mul_le_mul_left (Fintype.card V) h2
-    simp [Nat.mul_comm] at h2'
+    simp only [Nat.mul_comm] at h2'
     rw [← Nat.mul_assoc] at h2'
-    simp [← pow_two] at h2'
-    sorry
-
-  sorry
+    simp only [← pow_two] at h2'
+    conv => rhs; rw [Nat.mul_comm]
+    exact h2'
+  simp only [mul_pow] at h3
+  norm_num at h3
+  conv at h3 =>
+    lhs;
+    simp only [pow_two]
+    rw [← mul_assoc]
+    rw [← mul_comm]
+  by_cases hE : G.edgeFinset.card = 0
+  · simp [hE]
+  · have hE' : 0 < G.edgeFinset.card := Nat.pos_of_ne_zero hE
+    exact Nat.le_of_mul_le_mul_left h3 hE'
 
 /--
 Mantel's theorem.
