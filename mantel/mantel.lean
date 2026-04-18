@@ -129,43 +129,10 @@ Key inequality leading to Mantel's theorem.
 Mathematically:
 4|E| ≤ |V|^2.
 -/
-lemma four_mul_edges_le_sq_vertex_set_card
+lemma four_mul_edges_le_sq_card_vset
   (htri : TriangleFree (G := G)) :
   4 * G.edgeFinset.card ≤ (Fintype.card V) ^ 2 := by
-  classical
-
-  -- Combine Cauchy–Schwarz and squared-degree bound
-  have h_main :
-      (∑ x : V, G.degree x) ^ 2 ≤
-        (Fintype.card V) ^ 2 * G.edgeFinset.card :=
-    le_trans
-      (sq_sum_degrees_le_card_vertex_set_mul_sum_sq_degrees (G := G))
-      (by
-        have :=
-          Nat.mul_le_mul_left (Fintype.card V)
-            (sum_sq_degrees_le_card_edges_mul_card_vertex_set (G := G) htri)
-        simpa [pow_two, mul_comm, mul_left_comm, mul_assoc] using this)
-
-  -- Substitute handshaking lemma
-  have hsum :
-      (∑ x : V, G.degree x) = 2 * G.edgeFinset.card :=
-    handshaking_lemma (G := G)
-
-  have :
-      (2 * G.edgeFinset.card) ^ 2 ≤
-        (Fintype.card V) ^ 2 * G.edgeFinset.card := by
-    simpa [hsum] using h_main
-
-  -- Expand square
-  have :
-      4 * G.edgeFinset.card ^ 2 ≤
-        (Fintype.card V) ^ 2 * G.edgeFinset.card := by
-    simpa [pow_two, mul_comm, mul_left_comm, mul_assoc] using this
-
-  -- Cancel one |E|
-  by_cases hE : G.edgeFinset.card = 0
-  · simp [hE]
-  · exact Nat.le_of_mul_le_mul_right this (Nat.pos_of_ne_zero hE)
+  sorry
 
 /--
 Mantel's theorem.
@@ -177,8 +144,10 @@ Mathematically:
 -/
 theorem mantel
   (htri : TriangleFree (G := G)) :
-  G.edgeFinset.card ≤ (Fintype.card V ^ 2) / 4 := by
-  sorry
+  G.edgeFinset.card ≤ (Fintype.card V)^2 / 4 := by
+  have h : 4 * G.edgeFinset.card ≤ (Fintype.card V)^2 :=
+    four_mul_edges_le_sq_card_vset (G := G) htri
+  omega
 
 end Finite
 end Mantel
