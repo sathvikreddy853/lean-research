@@ -108,7 +108,7 @@ lemma handshaking_lemma :
   (∑ v : V, G.degree v) = 2 * G.edgeFinset.card := by
   exact SimpleGraph.sum_degrees_eq_twice_card_edges G
 
-set_option linter.flexible false in
+-- set_option linter.flexible false in
 /--
 Cauchy–Schwarz inequality applied to the degree sequence.
 
@@ -122,10 +122,10 @@ lemma sq_sum_degrees_le_card_vset_mul_sum_sq_degrees :
     (s := Finset.univ)
     (f := fun x : V => G.degree x)
     (g := fun _ : V => (1 : ℕ))
-  simp [Finset.sum_const] at h
-  simp [Nat.mul_comm] at h
+  simp only [Finset.sum_const] at h
+  simp only [Nat.mul_comm] at h
+  norm_num at h
   exact h
-
 
 /--
 In a triangle-free graph, the sum of squares of vertex degrees
@@ -138,7 +138,6 @@ lemma sum_sq_degrees_le_card_edges_mul_card_vset
   (htri : TriangleFree (G := G)) :
   (∑ x : V, G.degree x ^ 2) ≤ G.edgeFinset.card * Fintype.card V := by
   sorry
-
 /--
 Key inequality leading to Mantel's theorem.
 
@@ -153,6 +152,7 @@ lemma four_mul_edges_le_sq_card_vset
   have h2 :=
     sum_sq_degrees_le_card_edges_mul_card_vset (G := G) htri
   rw [handshaking_lemma] at h1
+  --
   have h3 : (2 * G.edgeFinset.card) ^ 2 ≤ G.edgeFinset.card * (Fintype.card V) ^ 2 := by
     apply le_trans h1
     have h2' := Nat.mul_le_mul_left (Fintype.card V) h2
@@ -161,6 +161,7 @@ lemma four_mul_edges_le_sq_card_vset
     simp only [← pow_two] at h2'
     conv => rhs; rw [Nat.mul_comm]
     exact h2'
+  --
   simp only [mul_pow] at h3
   norm_num at h3
   conv at h3 =>

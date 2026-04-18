@@ -10,7 +10,7 @@ $$
 |E| \leq |E(T_r(n))|
 $$
 
-where $ n = |V| $ and $ T_r(n) $ is the complete $ r $-partite graph with parts as equal as possible.
+where $n = |V|$ and $T_r(n)$ is the complete $ r $-partite graph with parts as equal as possible.
 
 Equivalently,
 
