@@ -1,16 +1,19 @@
 import Mathlib
 
+
 set_option linter.unusedSectionVars false
 set_option linter.unusedSectionVars false
 set_option warningAsError false
 set_option linter.unusedFintypeInType false
 set_option linter.unusedDecidableInType false
+
 open Finset
+open scoped BigOperators
 
 namespace Mantel
 
-variable {V : Type}
-variable {G : SimpleGraph V}
+variable {V : Type u}
+variable (G : SimpleGraph V)
 
 section Finite
 
@@ -19,14 +22,18 @@ variable [Fintype V] [DecidableEq V] [DecidableRel G.Adj]
 /--
 A graph is triangle-free if it contains no triple of vertices
 u, v, w such that all three edges uv, vw, uw are present.
-Formally: ∀ u v w, ¬(uv ∈ E ∧ vw ∈ E ∧ uw ∈ E).
+
+Formally:
+∀ u v w, G.Adj u v → G.Adj v w → G.Adj u w → False.
 -/
 def TriangleFree : Prop :=
-  ∀ (u v w : V), G.Adj u v → G.Adj v w → G.Adj u w → False
+  ∀ ⦃u v w : V⦄, G.Adj u v → G.Adj v w → G.Adj u w → False
 
 /--
 A vertex v belongs to the neighborhood of u if and only if u and v are adjacent.
-Formally: v ∈ N(u) ↔ uv ∈ E.
+
+Formally:
+v ∈ N(u) ↔ uv ∈ E.
 -/
 lemma mem_neighborFinset_iff_adj {u v : V} :
   v ∈ G.neighborFinset u ↔ G.Adj u v := by
@@ -34,7 +41,9 @@ lemma mem_neighborFinset_iff_adj {u v : V} :
 
 /--
 The size of the neighborhood of a vertex equals its degree.
-Formally: |N(v)| = deg(v).
+
+Formally:
+|N(v)| = deg(v).
 -/
 lemma card_neighborFinset_eq_degree (v : V) :
   (G.neighborFinset v).card = G.degree v := by
@@ -43,19 +52,23 @@ lemma card_neighborFinset_eq_degree (v : V) :
 /--
 In a triangle-free graph, if uv is an edge, then there is no vertex w
 adjacent to both u and v.
-Formally: uv ∈ E ⇒ ¬∃ w, uw ∈ E ∧ vw ∈ E.
+
+Formally:
+uv ∈ E ⇒ ¬∃ w, uw ∈ E ∧ vw ∈ E.
 -/
 lemma no_common_neighbor_of_edge
   (htri : TriangleFree (G := G)) {u v w : V} (huv : G.Adj u v) :
   ¬ (G.Adj u w ∧ G.Adj v w) := by
   intro h
   rcases h with ⟨huw, hvw⟩
-  exact htri u v w huv hvw huw
+  exact htri huv hvw huw
 
 /--
 In a triangle-free graph, if uv is an edge, then the neighborhoods
 of u and v are disjoint.
-Formally: uv ∈ E ⇒ N(u) ∩ N(v) = ∅.
+
+Formally:
+uv ∈ E ⇒ N(u) ∩ N(v) = ∅.
 -/
 lemma neighborFinsets_disjoint_for_edge
   (htri : TriangleFree (G := G)) {u v : V} (huv : G.Adj u v) :
@@ -63,54 +76,104 @@ lemma neighborFinsets_disjoint_for_edge
   rw [disjoint_left]
   intro w huw hvw
   rw [mem_neighborFinset_iff_adj] at huw hvw
-  exact no_common_neighbor_of_edge htri huv ⟨huw, hvw⟩
+  exact no_common_neighbor_of_edge (G := G) htri huv ⟨huw, hvw⟩
 
 /--
-In a triangle-free graph, for any edge uv, the sum of degrees is bounded
-by the number of vertices.
-Formally: uv ∈ E ⇒ deg(u) + deg(v) ≤ |V|.
+In a triangle-free graph, the neighborhoods of the endpoints of any edge are disjoint.
+This implies that the sum of their degrees is bounded by the total number of vertices.
+
+Mathematically:
+If uv ∈ E, then
+deg(u) + deg(v) ≤ |V|.
 -/
 lemma sum_of_degree_le_card_of_vset
   (htri : TriangleFree (G := G)) {u v : V} (huv : G.Adj u v) :
   G.degree u + G.degree v ≤ Fintype.card V := by
-    rw [← card_neighborFinset_eq_degree u]
-    rw [← card_neighborFinset_eq_degree v]
+    rw [← card_neighborFinset_eq_degree (G := G) u]
+    rw [← card_neighborFinset_eq_degree (G := G) v]
     have hdisj : Disjoint (G.neighborFinset u) (G.neighborFinset v) :=
-      neighborFinsets_disjoint_for_edge htri huv
+      neighborFinsets_disjoint_for_edge (G := G) htri huv
     rw [← Finset.card_union_of_disjoint hdisj]
     apply Finset.card_le_univ
 
 /--
 (Handshaking Lemma)
-The sum of degrees of all vertices equals twice the number of edges.
-Formally: ∑_v deg(v) = 2|E|.
+
+The sum of the degrees of all vertices equals twice the number of edges.
+
+Mathematically:
+∑_{v ∈ V} deg(v) = 2|E|.
 -/
 lemma handshaking_lemma :
   (∑ v : V, G.degree v) = 2 * G.edgeFinset.card := by
   exact SimpleGraph.sum_degrees_eq_twice_card_edges G
 
 /--
-The sum of squares of degrees is bounded by the product of the number of vertices and edges.
-Formally: ∑_v deg(v)^2 ≤ |V||E|
+Cauchy–Schwarz inequality applied to the degree sequence.
+
+Mathematically:
+(∑_{v ∈ V} deg(v))^2 ≤ |V| · ∑_{v ∈ V} deg(v)^2.
 -/
-lemma sum_sq_degree_le_card_vset_mul_card_edges :
-  (∑ v : V, (G.degree v)^2 ) ≤ G.edgeFinset.card * Fintype.card V := by
-  apply?
+lemma sq_sum_degrees_le_card_vertex_set_mul_sum_sq_degrees :
+  (∑ x : V, G.degree x) ^ 2 ≤
+    Fintype.card V * (∑ x : V, G.degree x ^ 2) := by
+  classical
+  simpa using
+    sq_sum_le_card_mul_sum_sq
+      (s := (Finset.univ : Finset V))
+      (f := fun x => G.degree x)
 
 /--
-In a triangle-free graph, the number of edges satisfies:
+Key inequality leading to Mantel's theorem.
+
+Mathematically:
 4|E| ≤ |V|^2.
-This is the key inequality leading to Mantel's theorem.
 -/
 lemma four_mul_edges_le_sq_vertex_set_card
   (htri : TriangleFree (G := G)) :
   4 * G.edgeFinset.card ≤ (Fintype.card V) ^ 2 := by
-  sorry
+  classical
+
+  -- Combine Cauchy–Schwarz and squared-degree bound
+  have h_main :
+      (∑ x : V, G.degree x) ^ 2 ≤
+        (Fintype.card V) ^ 2 * G.edgeFinset.card :=
+    le_trans
+      (sq_sum_degrees_le_card_vertex_set_mul_sum_sq_degrees (G := G))
+      (by
+        have :=
+          Nat.mul_le_mul_left (Fintype.card V)
+            (sum_sq_degrees_le_card_edges_mul_card_vertex_set (G := G) htri)
+        simpa [pow_two, mul_comm, mul_left_comm, mul_assoc] using this)
+
+  -- Substitute handshaking lemma
+  have hsum :
+      (∑ x : V, G.degree x) = 2 * G.edgeFinset.card :=
+    handshaking_lemma (G := G)
+
+  have :
+      (2 * G.edgeFinset.card) ^ 2 ≤
+        (Fintype.card V) ^ 2 * G.edgeFinset.card := by
+    simpa [hsum] using h_main
+
+  -- Expand square
+  have :
+      4 * G.edgeFinset.card ^ 2 ≤
+        (Fintype.card V) ^ 2 * G.edgeFinset.card := by
+    simpa [pow_two, mul_comm, mul_left_comm, mul_assoc] using this
+
+  -- Cancel one |E|
+  by_cases hE : G.edgeFinset.card = 0
+  · simp [hE]
+  · exact Nat.le_of_mul_le_mul_right this (Nat.pos_of_ne_zero hE)
 
 /--
-Mantel's Theorem:
+Mantel's theorem.
+
 A triangle-free graph on n vertices has at most n^2 / 4 edges.
-Formally: |E| ≤ |V|^2 / 4.
+
+Mathematically:
+|E| ≤ |V|^2 / 4.
 -/
 theorem mantel
   (htri : TriangleFree (G := G)) :
