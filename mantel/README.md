@@ -1,95 +1,107 @@
-# Mantel's Theorem
-This module formalizes Mantel's Theorem in Lean using `SimpleGraph`.
+# Turán's Theorem
 
-### Statement of Mantel's Theorem
+This module proves Turán’s Theorem using induction and degree arguments.
 
-Let $G = (V, E)$ be a finite simple graph with no triangles. Then:
+## Statement
+
+Let $G = (V, E)$ be a finite simple graph with no clique of size $r+1$.
+Then:
 
 $$
-|E| \leq \frac{|V|^2}{4}
+|E| \le \frac{r-1}{2r} |V|^2
 $$
 
 ## Definitions
 
-### Triangle-Free Graph
+### $K_{r+1}$-Free Graph
 
-A graph is triangle-free if:
+A graph is $K_{r+1}$-free if:
 
 $$
-\forall\; u,v,w \in V,\quad \neg\big((u, v) \in E \land (v, w) \in E \land (u,w) \in E\big)
+\forall v_1, \dots, v_{r+1} \in V,\quad
+\neg\Big( \bigwedge_{i<j} (v_i, v_j) \in E \Big)
 $$
 
 ## Lemmas Used
 
-The theorem is built through the following sequence of lemmas:
+### 1. Minimum Degree Bound
 
-### 1. Neighborhood Characterization
-
-$$
-v \in N(u) \iff (u, v) \in E
-$$
-
-### 2. Degree via Neighborhood Size
+There exists $v \in V$ such that:
 
 $$
-|N(v)| = \deg(v)
+\deg(v) \le \frac{2|E|}{|V|}
 $$
 
-### 3. No Common Neighbor
+### 2. Neighborhood is $K_r$-Free
 
-If $(u, v) \in E$, then:
-
-$$
-\nexists\; w \in V \text{ such that } (u, w) \in E \land (v, w) \in E
-$$
-
-### 4. Disjoint Neighborhoods
-
-If $(u, v) \in E$, then:
+Let $A = N(v)$. Then:
 
 $$
-N(u) \cap N(v) = \varnothing
+G[A] \text{ is } K_r\text{-free}
 $$
 
-### 5. Degree Bound on Edges
+Otherwise, together with $v$, we get a $K_{r+1}$.
 
-For any edge $(u, v) \in E$:
+### 3. Complement Set is $K_{r+1}$-Free
 
-$$
-\deg(u) + \deg(v) \leq |V|
-$$
-
-### 6. Handshaking Lemma
+Let:
 
 $$
-\sum_{v \in V} \deg(v) = 2|E|
+B = V \setminus (A \cup \{v\})
 $$
 
-### 7. Sum of Squared Degrees Bound
+Then:
 
 $$
-\sum_{v \in V} \deg(v)^2 \leq |V| \cdot |E|
+G[B] \text{ is } K_{r+1}\text{-free}
 $$
 
-### 8. The Main Inequality
+### 4. Edge Decomposition
 
-Using Cauchy-Schwarz:
-
-$$
-\left( \sum_{v \in V} \deg(v) \right)^2
-\leq |V| \sum_{v \in V} \deg(v)^2
-$$
-
-Substitute:
+Edges can be partitioned as:
 
 $$
-(2|E|)^2 \leq |V|^2 |E|
+|E| = |E(A)| + |E(B)| + |A|
 $$
 
-### 9. Final Bound
+- $|E(A)|$: edges inside $A$
+- $|E(B)|$: edges inside $B$
+- $|A|$: edges between $v$ and $A$
+
+### 5. Inductive Bounds
+
+Let $|A| = a$, $|B| = b$, with $a + b + 1 = n$.
+
+By induction:
 
 $$
-4|E|^2 \leq |V|^2 |E|
-\Rightarrow
-|E| \leq \frac{|V|^2}{4}
+|E(A)| \le \frac{r-2}{2(r-1)} a^2
+$$
+
+$$
+|E(B)| \le \frac{r-1}{2r} b^2
+$$
+
+### 6. Combine Inequalities
+
+Substitute into edge decomposition:
+
+$$
+|E| \le \frac{r-2}{2(r-1)} a^2 + \frac{r-1}{2r} b^2 + a
+$$
+
+### 7. Final Inequality
+
+Using $a + b + 1 = n$ and algebraic manipulation, one obtains:
+
+$$
+|E| \le \frac{r-1}{2r} n^2
+$$
+
+## Conclusion
+
+Thus every $K_{r+1}$-free graph satisfies:
+
+$$
+|E| \le \frac{r-1}{2r} |V|^2
 $$

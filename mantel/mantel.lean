@@ -137,7 +137,29 @@ Formally:
 lemma sum_sq_degrees_le_card_edges_mul_card_vset
   (htri : TriangleFree (G := G)) :
   (∑ x : V, G.degree x ^ 2) ≤ G.edgeFinset.card * Fintype.card V := by
+    have double_count :
+      ∑ v : V, G.degree v ^ 2 = ∑ e ∈ G.edgeFinset, (G.degree (e.out.1) + G.degree (e.out.2)) := by
+      sorry
+
+    have tri_bound : ∀ e : G.edgeFinset, G.degree (e.val.out.1) + G.degree (e.val.out.2) ≤ Fintype.card V := by
+      intro e
+      have h1 := G.mem_edgeFinset.mp e.property
+
+      have hadj : G.Adj (e.val.out.1) (e.val.out.2) := by
+        have h := G.mem_edgeFinset.mp e.property
+        have heq : s(e.val.out.1, e.val.out.2) = ↑e := Quot.out_eq (↑e)
+        rw [← heq, SimpleGraph.mem_edgeSet] at h
+        exact h
+      exact sum_of_degree_le_card_of_vset (G := G) htri hadj
+    --
+    have sum_bound : ∑ e ∈ G.edgeFinset, (G.degree (e.out.1) + G.degree (e.out.2)) ≤ G.edgeFinset.card * Fintype.card V := by
+      apply Finset.sum_le
+      intro e he
+      exact tri_bound e
+    rw [double_count]
+    exact sum_bound
   sorry
+
 /--
 Key inequality leading to Mantel's theorem.
 
