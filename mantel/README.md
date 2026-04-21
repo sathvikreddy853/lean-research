@@ -1,107 +1,95 @@
-# Turán's Theorem
+# Mantel's Theorem
+This module formalizes Mantel's Theorem in Lean using `SimpleGraph`.
 
-This module proves Turán’s Theorem using induction and degree arguments.
+### Statement of Mantel's Theorem
 
-## Statement
-
-Let $G = (V, E)$ be a finite simple graph with no clique of size $r+1$.
-Then:
+Let $G = (V, E)$ be a finite simple graph with no triangles. Then:
 
 $$
-|E| \le \frac{r-1}{2r} |V|^2
+|E| \leq \frac{|V|^2}{4}
 $$
 
 ## Definitions
 
-### $K_{r+1}$-Free Graph
+### Triangle-Free Graph
 
-A graph is $K_{r+1}$-free if:
+A graph is triangle-free if:
 
 $$
-\forall v_1, \dots, v_{r+1} \in V,\quad
-\neg\Big( \bigwedge_{i<j} (v_i, v_j) \in E \Big)
+\forall\; u,v,w \in V,\quad \neg\big((u, v) \in E \land (v, w) \in E \land (u,w) \in E\big)
 $$
 
 ## Lemmas Used
 
-### 1. Minimum Degree Bound
+The theorem is built through the following sequence of lemmas:
 
-There exists $v \in V$ such that:
-
-$$
-\deg(v) \le \frac{2|E|}{|V|}
-$$
-
-### 2. Neighborhood is $K_r$-Free
-
-Let $A = N(v)$. Then:
+### 1. Neighborhood Characterization
 
 $$
-G[A] \text{ is } K_r\text{-free}
+v \in N(u) \iff (u, v) \in E
 $$
 
-Otherwise, together with $v$, we get a $K_{r+1}$.
-
-### 3. Complement Set is $K_{r+1}$-Free
-
-Let:
+### 2. Degree via Neighborhood Size
 
 $$
-B = V \setminus (A \cup \{v\})
+|N(v)| = \deg(v)
 $$
 
-Then:
+### 3. No Common Neighbor
+
+If $(u, v) \in E$, then:
 
 $$
-G[B] \text{ is } K_{r+1}\text{-free}
+\nexists\; w \in V \text{ such that } (u, w) \in E \land (v, w) \in E
 $$
 
-### 4. Edge Decomposition
+### 4. Disjoint Neighborhoods
 
-Edges can be partitioned as:
-
-$$
-|E| = |E(A)| + |E(B)| + |A|
-$$
-
-- $|E(A)|$: edges inside $A$
-- $|E(B)|$: edges inside $B$
-- $|A|$: edges between $v$ and $A$
-
-### 5. Inductive Bounds
-
-Let $|A| = a$, $|B| = b$, with $a + b + 1 = n$.
-
-By induction:
+If $(u, v) \in E$, then:
 
 $$
-|E(A)| \le \frac{r-2}{2(r-1)} a^2
+N(u) \cap N(v) = \varnothing
 $$
 
-$$
-|E(B)| \le \frac{r-1}{2r} b^2
-$$
+### 5. Degree Bound on Edges
 
-### 6. Combine Inequalities
-
-Substitute into edge decomposition:
+For any edge $(u, v) \in E$:
 
 $$
-|E| \le \frac{r-2}{2(r-1)} a^2 + \frac{r-1}{2r} b^2 + a
+\deg(u) + \deg(v) \leq |V|
 $$
 
-### 7. Final Inequality
-
-Using $a + b + 1 = n$ and algebraic manipulation, one obtains:
+### 6. Handshaking Lemma
 
 $$
-|E| \le \frac{r-1}{2r} n^2
+\sum_{v \in V} \deg(v) = 2|E|
 $$
 
-## Conclusion
-
-Thus every $K_{r+1}$-free graph satisfies:
+### 7. Sum of Squared Degrees Bound
 
 $$
-|E| \le \frac{r-1}{2r} |V|^2
+\sum_{v \in V} \deg(v)^2 \leq |V| \cdot |E|
+$$
+
+### 8. The Main Inequality
+
+Using Cauchy-Schwarz:
+
+$$
+\left( \sum_{v \in V} \deg(v) \right)^2
+\leq |V| \sum_{v \in V} \deg(v)^2
+$$
+
+Substitute:
+
+$$
+(2|E|)^2 \leq |V|^2 |E|
+$$
+
+### 9. Final Bound
+
+$$
+4|E|^2 \leq |V|^2 |E|
+\Rightarrow
+|E| \leq \frac{|V|^2}{4}
 $$
