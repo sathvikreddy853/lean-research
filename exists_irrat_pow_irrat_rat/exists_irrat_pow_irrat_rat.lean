@@ -15,12 +15,14 @@ theorem exists_irrat_pow_irrat_rat
             rw [h]
           _ = √2^(2) := by simp
           _ = 2 := by simp
+      --
       have rat : ¬ Irrational ((√2^√2)^√2) := by
         rw [eq]
         simp
       have irrat : Irrational √2 := by
         exact irrational_sqrt_two
       exact ⟨hl, irrat, rat⟩
+    --
     · use √2, √2
       have irrat : Irrational √2 := by
         exact irrational_sqrt_two
